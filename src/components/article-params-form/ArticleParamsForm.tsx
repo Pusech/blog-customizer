@@ -1,6 +1,6 @@
 import { ArrowButton } from 'components/arrow-button';
 import { Button } from 'components/button';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { clsx } from 'clsx';
 
 import styles from './ArticleParamsForm.module.scss';
@@ -13,6 +13,8 @@ import * as articleProps from 'src/constants/articleProps';
 import { Select } from '../select';
 import { RadioGroup } from '../radio-group';
 import { Separator } from '../separator';
+import { Text } from '../text';
+import { useClose } from 'src/hooks/useClose';
 
 interface ArticleParamsFormProps {
 	setCurrentStyle: React.Dispatch<React.SetStateAction<ArticleStateType>>;
@@ -24,20 +26,13 @@ export const ArticleParamsForm: React.FC<ArticleParamsFormProps> = ({
 	const [isOpened, setIsOpened] = useState(false);
 	const [formState, setFormState] = useState(defaultArticleState);
 	const menuRef = useRef<HTMLFormElement>(null);
+	// создаем `ref` для нашей формы и указываем его на внешнем блоке с формой
 
-	useEffect(() => {
-		const closeHandler = (e: Event) => {
-			if (!menuRef.current?.contains(e.target as Node)) {
-				setIsOpened(false);
-			}
-		};
-
-		document.addEventListener('mousedown', closeHandler);
-
-		return () => {
-			document.removeEventListener('mousedown', closeHandler);
-		};
-	}, []);
+	useClose({
+		isOpen: isOpened,
+		onClose: () => setIsOpened(false),
+		rootRef: menuRef,
+	});
 
 	const toggleButton = () => {
 		setIsOpened(!isOpened);
@@ -58,14 +53,13 @@ export const ArticleParamsForm: React.FC<ArticleParamsFormProps> = ({
 
 	return (
 		<>
-			<ArrowButton
-				onClick={() => {
-					toggleButton();
-				}}
-				isOpened={isOpened}
-			/>
+			<ArrowButton onClick={toggleButton} isOpened={isOpened} />
 			<aside className={className} ref={menuRef}>
 				<form className={styles.form} onSubmit={handleSubmit}>
+					<Text size={31} weight={800} uppercase={true}>
+						Задайте параметры
+					</Text>
+
 					<Select
 						selected={formState.fontFamilyOption}
 						onChange={(value: OptionType) =>
